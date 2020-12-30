@@ -1,0 +1,16 @@
+﻿<Properties StartupConfiguration="{45D5097A-15DF-4967-BCE8-A4BC0A6D4F2F}|Default">
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug|x86" />
+  <MonoDevelop.Ide.DebuggingService.PinnedWatches />
+  <MonoDevelop.Ide.ItemProperties.BillDeathIndex PreferredExecutionTarget="MonoDevelop.Default" />
+  <MonoDevelop.Ide.DebuggingService.Breakpoints>
+    <BreakpointStore />
+  </MonoDevelop.Ide.DebuggingService.Breakpoints>
+  <MonoDevelop.Ide.Workbench ActiveDocument="BillDeathIndex\State_NewYork\NYSAPI.cs">
+    <Files>
+      <File FileName="BillDeathIndex\Program.cs" Line="7" Column="5" />
+      <File FileName="BillDeathIndex\State_NewYork\NYSWrapper.cs" Line="357" Column="11" />
+      <File FileName="BillDeathIndex\State_NewYork\NYSAPI.cs" Line="70" Column="52" />
+      <File FileName="BillDeathIndex\Utils\WebRequestUtils.cs" Line="23" Column="97" />
+    </Files>
+  </MonoDevelop.Ide.Workbench>
+</Properties>
