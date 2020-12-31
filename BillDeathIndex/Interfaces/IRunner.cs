@@ -2,6 +2,11 @@
 
 namespace BillDeathIndex
 {
+	/// <summary>
+	/// A delegate for calling when bills are finished downloading.
+	/// </summary>
+	public delegate void DownloadsFinished();
+
 	public interface IRunner
 	{
 		/// <summary>
@@ -14,6 +19,11 @@ namespace BillDeathIndex
 		/// </summary>
 		/// <param name="bills">The downloaded bills.</param>
 		void HandleDownloadedBills(Bill[] bills);
+
+		/// <summary>
+		/// Handles when bill downloads are finished.
+		/// </summary>
+		void HandleDownloadsFinished();
 
 		/// <summary>
 		/// Gets the death indicators for a bill.

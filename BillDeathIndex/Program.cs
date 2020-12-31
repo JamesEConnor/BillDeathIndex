@@ -1,6 +1,8 @@
 ﻿using System;
 
 using BillDeathIndex.States.NY;
+using BillDeathIndex.Utils;
+using Newtonsoft.Json;
 
 namespace BillDeathIndex
 {
@@ -8,9 +10,7 @@ namespace BillDeathIndex
 	{
 		static string[] MENU_OPTIONS = new string[] {
 			"New York State API download",
-			"New York State CSV Conversion",
-			"Congress API download",
-			"Congress CSV Conversion"
+			"New York State CSV Conversion"
 		};
 
 		public static void Main(string[] args)
@@ -30,6 +30,50 @@ namespace BillDeathIndex
 				runner.Run();
 
 				while (!runner.EndConditionMet) { }
+
+				Logger.Log("Completed downloads", "END", ConsoleColor.Green);
+			}
+			else if (menuSelect == 1)
+			{
+				Logger.Log("Checking for file.");
+
+				if (!System.IO.File.Exists(NYSRunner.RESULTS_PATH))
+				{
+					Logger.LogError("Bills have not been downloaded yet. Download script must be run before attempting CSV conversion.");
+					return;
+				}
+
+				Logger.Log("File found.");
+
+				//Create a JSON Stream Reader
+				using (var reader = new JSONArrayStreamReader(NYSRunner.RESULTS_PATH))
+				{
+					//Create a converter
+					NYSConverter converter = new NYSConverter();
+					converter.SaveHeaderLine();
+
+					//Counts the number of bills.
+					int counter = 0;
+
+					//Loops through each bill one at a time.
+					foreach (string JSON in reader)
+					{
+						//Print progress
+						//if (counter % 1000 == 0)
+							Logger.Log("Saved " + counter + " bills");
+
+						//Converts the bill
+						NYSBill nysBill = JsonConvert.DeserializeObject<NYSBill>(JSON);
+
+						//Save a converted CSV of the bill.
+						converter.SaveConversion(nysBill);
+
+						//Track the number of bills saved.
+						counter++;
+					}
+				}
+
+				Logger.Log("Completed conversion", "END", ConsoleColor.Green);
 			}
 		}
 

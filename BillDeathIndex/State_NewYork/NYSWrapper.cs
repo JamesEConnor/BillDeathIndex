@@ -371,7 +371,7 @@ namespace BillDeathIndex.States.NY
 		/// <summary>
 		/// The member ID of the rep.
 		/// </summary>
-		int memberId;
+		public int memberId;
 
 		/// <summary>
 		/// The chamber of the rep.

@@ -45,19 +45,21 @@ namespace BillDeathIndex.States.NY
 		/// </summary>
 		/// <param name="settings">The download settings.</param>
 		/// <param name="OnBillsDownloaded">The callback to send the results to.</param>
-		public async Task DownloadBills(IDownloaderSettings settings, BillDownloadCallback OnBillsDownloaded)
+		public async Task DownloadBills(IDownloaderSettings settings, BillDownloadCallback OnBillsDownloaded, DownloadsFinished OnBillDownloadFinished)
 		{
 			try
 			{
-				foreach (int year in ((NYSAPISettings)settings).years)
+				//Loop through all the years
+				int[] years = ((NYSAPISettings)settings).years;
+				for (int y = 0; y < years.Length; y++)
 				{
-					Logger.Log("Starting year " + year);
+					Logger.Log("Starting year " + years[y]);
 
 					//The base URL to build subsequent URLs off of.
-					string baseURL = "https://legislation.nysenate.gov/api/3/bills/" + year + "?key=" + apiKey + "&full=true&fullTextFormat=PLAIN";
+					string baseURL = "https://legislation.nysenate.gov/api/3/bills/" + years[y] + "?key=" + apiKey + "&full=true&fullTextFormat=PLAIN";
 
 					//The initial bill response that will contain information on how many bills exist.
-					NYSBillResponse initResponse = (NYSBillResponse)RequestBills(baseURL + "&limit=1", year);
+					NYSBillResponse initResponse = (NYSBillResponse)RequestBills(baseURL + "&limit=1", years[y]);
 					totalBillsToDownload += initResponse.total;
 
 					Logger.Log("Total bill count raised to " + totalBillsToDownload);
@@ -68,15 +70,25 @@ namespace BillDeathIndex.States.NY
 					//Download the remaining bills asynchronously
 					for (int a = 1; a < initResponse.total; a += 1000)
 					{
-						Logger.Log(string.Format("Downloading bills {0}-{1} of {2} for session years {3} through {4}.", a, a + 1000, initResponse.total, year, year + 1));
+						Logger.Log(string.Format("Downloading bills {0}-{1} of {2} for session years {3} through {4}.", a, a + 1000, initResponse.total, years[y], years[y] + 1));
 
 						//Ensure the maximum thread count is never surpassed.
 						while (threadCount >= MAX_THREAD_COUNT)
 							await Task.Delay(1000);
 
-						RequestBillsAsync(baseURL + "&limit=1000&offset=" + a, OnBillsDownloaded);
+						if (a + 1000 > initResponse.total && y == years.Length - 1)
+						{
+							//Make the last request synchronously to ensure it finishes before ending the process
+							NYSBillResponse finalResponse = (NYSBillResponse)RequestBills(baseURL + "&limit=1000&offset=" + a, years[y]);
+							OnBillsDownloaded(finalResponse.result.items);
+						}
+						else
+							RequestBillsAsync(baseURL + "&limit=1000&offset=" + a, OnBillsDownloaded);
 					}
 				}
+
+				//Callback for when the downloads are finished.
+				OnBillDownloadFinished();
 			}
 			catch (Exception e)
 			{

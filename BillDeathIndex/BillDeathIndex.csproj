@@ -55,6 +55,9 @@
     <Compile Include="DeathEvaluator.cs" />
     <Compile Include="Utils\IOUtils.cs" />
     <Compile Include="Utils\Secrets.cs" />
+    <Compile Include="State_NewYork\NYSConverter.cs" />
+    <Compile Include="Interfaces\ICSVConverter.cs" />
+    <Compile Include="Utils\JSONArrayStreamReader.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="State_NewYork\" />

@@ -14,7 +14,13 @@ namespace BillDeathIndex.States.NY
 		/// <summary>
 		/// The path to the results file.
 		/// </summary>
-		readonly string RESULTS_PATH;
+		public static string RESULTS_PATH
+		{
+			get
+			{
+				return Path.GetFullPath("files/states/ny.json");
+			}
+		}
 
 		/// <summary>
 		/// Gets a value indicating whether this runner <see cref="T:BillDeathIndex.States.NY.NYSRunner"/> has met its end condition.
@@ -34,7 +40,6 @@ namespace BillDeathIndex.States.NY
 
 		public NYSRunner()
 		{
-			RESULTS_PATH = Path.GetFullPath("files/states/ny.json");
 			EndConditionMet = false;
 		}
 
@@ -55,7 +60,7 @@ namespace BillDeathIndex.States.NY
 			);
 
 			//Creates the downloading task
-			Task.Run(() => api.DownloadBills(new NYSAPISettings(true), HandleDownloadedBills));
+			Task.Run(() => api.DownloadBills(new NYSAPISettings(true), HandleDownloadedBills, HandleDownloadsFinished));
 		}
 
 		/// <summary>
@@ -78,11 +83,19 @@ namespace BillDeathIndex.States.NY
 					if (bill.deathLevel == DeathEvaluator.BillDeathLevel.Alive)
 						continue;
 
+					//Create a small amount of information to save about a bill.
+					SavableBill savableBill = new SavableBill(
+						bill.printNo,
+						bill.title,
+						bill.summary,
+						bill.deathLevel
+					);
+
 					//Generate the CSV lines.
-					string csvLines = JsonConvert.SerializeObject(bill);
+					string JSONlines = JsonConvert.SerializeObject(savableBill);
 
 					//Write the info
-					writer.WriteLine(csvLines);
+					writer.WriteLine(JSONlines);
 				}
 
 				//Track the end condition.
@@ -102,6 +115,22 @@ namespace BillDeathIndex.States.NY
 			catch (Exception e)
 			{
 				Logger.LogError(e);
+			}
+		}
+
+		/// <summary>
+		/// Handles when the bill downloads are finished.
+		/// </summary>
+		public void HandleDownloadsFinished()
+		{
+			using (var fs = IOUtils.WaitForFile(RESULTS_PATH, FileMode.Append, FileAccess.Write, FileShare.Write))
+			{
+				using (var writer = new StreamWriter(fs))
+				{
+					//Write the last character and end the loop.
+					writer.WriteLine("]");
+					EndConditionMet = true;
+				}
 			}
 		}
 

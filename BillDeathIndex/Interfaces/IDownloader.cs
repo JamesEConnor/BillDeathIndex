@@ -18,7 +18,7 @@ namespace BillDeathIndex
 		/// Downloads the bills for this API.
 		/// </summary>
 		/// <param name="callback">The bill download callback.</param>
-		Task DownloadBills(IDownloaderSettings settings, BillDownloadCallback callback);
+		Task DownloadBills(IDownloaderSettings settings, BillDownloadCallback callback, DownloadsFinished OnBillDownloadFinished);
 
 		/// <summary>
 		/// Makes the request to the API, downloads the bills, and returns them to the ProcessBillResponses method.
