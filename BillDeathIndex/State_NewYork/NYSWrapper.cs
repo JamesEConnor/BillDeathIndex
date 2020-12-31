@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace BillDeathIndex.States.NY
 {
-	public class NYSBill
+	public class NYSBill : Bill
 	{
 		/// <summary>
 		/// The print number of the bill.
@@ -68,7 +68,7 @@ namespace BillDeathIndex.States.NY
 		/// <summary>
 		/// Represents the sponsor of a bill.
 		/// </summary>
-		public struct NYSSponsor
+		public class NYSSponsor
 		{
 			/// <summary>
 			/// The NYS Representative acting as sponsor for this bill.
@@ -198,6 +198,11 @@ namespace BillDeathIndex.States.NY
 			}
 		}
 
+		/// <summary>
+		/// The amendments to the bill.
+		/// </summary>
+		public NYSBillAmendments amendments;
+
 		public struct NYSBillAmendments
 		{
 			/// <summary>
@@ -302,7 +307,7 @@ namespace BillDeathIndex.States.NY
 	/// <summary>
 	/// The response returned by a request to the NYS API.
 	/// </summary>
-	public struct NYSBillResponse
+	public struct NYSBillResponse : IBillResponse
 	{
 		/// <summary>
 		/// Whether or not the request was a success.
@@ -361,7 +366,7 @@ namespace BillDeathIndex.States.NY
 	/// <summary>
 	/// A struct for representing a member of the NYS Senate/Assembly.
 	/// </summary>
-	public struct NYSRepresentative
+	public class NYSRepresentative
 	{
 		/// <summary>
 		/// The member ID of the rep.

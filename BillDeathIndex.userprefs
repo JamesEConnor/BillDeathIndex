@@ -5,12 +5,18 @@
   <MonoDevelop.Ide.DebuggingService.Breakpoints>
     <BreakpointStore />
   </MonoDevelop.Ide.DebuggingService.Breakpoints>
-  <MonoDevelop.Ide.Workbench ActiveDocument="BillDeathIndex\State_NewYork\NYSAPI.cs">
+  <MonoDevelop.Ide.Workbench ActiveDocument="BillDeathIndex\Program.cs">
     <Files>
-      <File FileName="BillDeathIndex\Program.cs" Line="7" Column="5" />
-      <File FileName="BillDeathIndex\State_NewYork\NYSWrapper.cs" Line="357" Column="11" />
-      <File FileName="BillDeathIndex\State_NewYork\NYSAPI.cs" Line="70" Column="52" />
-      <File FileName="BillDeathIndex\Utils\WebRequestUtils.cs" Line="23" Column="97" />
+      <File FileName="BillDeathIndex\Program.cs" Line="22" Column="51" />
+      <File FileName="BillDeathIndex\State_NewYork\NYSWrapper.cs" Line="70" Column="17" />
+      <File FileName="BillDeathIndex\State_NewYork\NYSAPI.cs" Line="199" Column="35" />
+      <File FileName="BillDeathIndex\Interfaces\IDownloader.cs" Line="35" Column="76" />
+      <File FileName="BillDeathIndex\State_NewYork\NYSRunner.cs" Line="45" Column="4" />
+      <File FileName="BillDeathIndex\DeathEvaluator.cs" Line="21" Column="25" />
+      <File FileName="BillDeathIndex\Interfaces\IRunner.cs" Line="12" Column="3" />
+      <File FileName="BillDeathIndex\Utils\IOUtils.cs" Line="21" Column="39" />
+      <File FileName="BillDeathIndex\Utils\Secrets.cs" Line="27" Column="28" />
+      <File FileName="BillDeathIndex\Utils\Logger.cs" Line="123" Column="49" />
     </Files>
   </MonoDevelop.Ide.Workbench>
 </Properties>

@@ -20,7 +20,7 @@ namespace BillDeathIndex.Utils
 			foreach (KeyValuePair<string, string> pair in newValues)
 			{
 				int startIndex = oldURL.IndexOf(pair.Key, parameterIndex, StringComparison.CurrentCultureIgnoreCase);
-				int endIndex = oldURL.IndexOf('&', startIndex + 1, StringComparison.CurrentCultureIgnoreCase);
+				int endIndex = oldURL.IndexOf('&', startIndex + 1);
 				string suffix = endIndex != -1 ? oldURL.Substring(endIndex) : "";
 
 				oldURL = oldURL.Substring(0, startIndex) + pair.Key + "=" + pair.Value + suffix;

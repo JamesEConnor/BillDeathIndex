@@ -1,0 +1,13 @@
+C:\Users\James\Documents\Projects\BillDeathIndex\BillDeathIndex\bin\Debug\BillDeathIndex.exe
+C:\Users\James\Documents\Projects\BillDeathIndex\BillDeathIndex\bin\Debug\BillDeathIndex.pdb
+C:\Users\James\Documents\Projects\BillDeathIndex\BillDeathIndex\bin\Debug\CsvHelper.dll
+C:\Users\James\Documents\Projects\BillDeathIndex\BillDeathIndex\bin\Debug\mscorlib.dll
+C:\Users\James\Documents\Projects\BillDeathIndex\BillDeathIndex\bin\Debug\Newtonsoft.Json.dll
+C:\Users\James\Documents\Projects\BillDeathIndex\BillDeathIndex\bin\Debug\normidna.nlp
+C:\Users\James\Documents\Projects\BillDeathIndex\BillDeathIndex\bin\Debug\normnfc.nlp
+C:\Users\James\Documents\Projects\BillDeathIndex\BillDeathIndex\bin\Debug\normnfd.nlp
+C:\Users\James\Documents\Projects\BillDeathIndex\BillDeathIndex\bin\Debug\normnfkc.nlp
+C:\Users\James\Documents\Projects\BillDeathIndex\BillDeathIndex\bin\Debug\normnfkd.nlp
+C:\Users\James\Documents\Projects\BillDeathIndex\BillDeathIndex\obj\x86\Debug\BillDeathIndex.csprojResolveAssemblyReference.cache
+C:\Users\James\Documents\Projects\BillDeathIndex\BillDeathIndex\obj\x86\Debug\BillDeathIndex.exe
+C:\Users\James\Documents\Projects\BillDeathIndex\BillDeathIndex\obj\x86\Debug\BillDeathIndex.pdb
