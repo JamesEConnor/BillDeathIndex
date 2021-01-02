@@ -22,7 +22,7 @@ namespace BillDeathIndex.Utils
 			messageType = messageType.ToUpper().PadLeft(5, ' ');
 
 			//Gets the properly formatted string
-			string result = string.Format("[{0}][{1}][{2}]\t{3}", DateTime.Now, messageType, logCount, message);
+			string result = string.Format("[{0}][{1}][{2}]\t{3}", DateTime.Now, messageType, logCount.ToString().PadLeft(4, '0'), message);
 
 			//Prints the correctly colored result.
 			Console.ForegroundColor = color;
@@ -133,6 +133,99 @@ namespace BillDeathIndex.Utils
 		public static void Debug(object message)
 		{
 			Log(message, "debug", ConsoleColor.Blue);
+		}
+
+		/// <summary>
+		/// Gets input from a user.
+		/// </summary>
+		/// <returns>The inputted string.</returns>
+		public static string GetInput()
+		{
+			//Gets the properly formatted string
+			string prompt = string.Format("[{0}][INPUT][{1}]\t", DateTime.Now, logCount.ToString().PadLeft(4, '0'));
+
+			//Prints the prompt and waits for input.
+			Console.ForegroundColor = ConsoleColor.Magenta;
+
+			Console.Write(prompt);
+			string result = Console.ReadLine();
+
+			Console.ResetColor();
+
+			logCount++;
+
+			return result;
+		}
+
+		/// <summary>
+		/// Gets the selection from the menu.
+		/// </summary>
+		/// <returns>The menu selection as an integer.</returns>
+		public static int GetMenuSelection(string[] options)
+		{
+			//Instructions
+			Console.WriteLine("(Use the arrow keys to navigate. Press enter to select.)");
+
+			//Print out the options and set the cursor to the first line.
+			for (int a = 0; a < options.Length; a++)
+				Console.WriteLine(string.Format("{0}. {1}", a + 1, options[a]));
+
+			//Set the cursor position to the first option
+			Console.SetCursorPosition(0, Console.CursorTop - options.Length);
+
+			//The currently selected option
+			int currentSelection = 0;
+
+			//Handles user input
+			while (true)
+			{
+				//Get the currently pressed key
+				ConsoleKey pressedKey = Console.ReadKey().Key;
+
+				//If the user pressed the up arrow, navigate up the menu
+				if (pressedKey == ConsoleKey.UpArrow)
+				{
+					//Ensure the number remains in place
+					Console.Write("\r" + (currentSelection + 1));
+
+					//If it won't take the cursor out of bounds
+					if (currentSelection - 1 >= 0)
+					{
+						//Set the selection and position properly
+						currentSelection--;
+
+						Console.SetCursorPosition(0, Console.CursorTop - 1);
+					}
+					else
+						Console.SetCursorPosition(0, Console.CursorTop);
+				}
+				//If the user pressed the down arrow, navigate down the menu
+				else if (pressedKey == ConsoleKey.DownArrow)
+				{
+					//Ensure the number remains in place
+					Console.Write("\r" + (currentSelection + 1));
+
+					//If it won't take the cursor out of bounds
+					if (currentSelection + 1 < options.Length)
+					{
+						//Set the selection and position properly
+						currentSelection++;
+
+						Console.SetCursorPosition(0, Console.CursorTop + 1);
+					}
+					else
+						Console.SetCursorPosition(0, Console.CursorTop);
+				}
+				//If the user presses enter, they've selected that one.
+				else if (pressedKey == ConsoleKey.Enter)
+					break;
+			}
+
+			//Set the cursor position to the line after the last option.
+			Console.SetCursorPosition(0, Console.CursorTop + (options.Length - currentSelection) + 1);
+
+			//Return the result.
+			return currentSelection;
 		}
 	}
 }

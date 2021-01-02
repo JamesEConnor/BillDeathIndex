@@ -1,4 +1,6 @@
 ﻿using System;
+using BillDeathIndex.Utils;
+
 namespace BillDeathIndex
 {
 	public class DeathEvaluator
@@ -11,7 +13,7 @@ namespace BillDeathIndex
 		{
 			None					 = 0,
 			Inactivity_OneYear		 = 1,
-			Inactivity_FourMonths	 = 2,
+			Inactivity_SixMonths	 = 2,
 			Approval_Committee		 = 4,
 			Approval_Chamber		 = 8,
 			Referred_Committee		 = 16,
@@ -41,42 +43,44 @@ namespace BillDeathIndex
 		public static BillDeathLevel EvaluateIndicators(BillDeathIndicators indicators)
 		{
 			//Most stringent death level, with the most conditions to meet.
-			if (indicators == (
-				BillDeathIndicators.Referred_Committee &
-				BillDeathIndicators.Inactivity_FourMonths &
+			if (
+				(indicators & BillDeathIndicators.Referred_Committee) == BillDeathIndicators.Referred_Committee &&
+				(indicators & BillDeathIndicators.Inactivity_OneYear) == BillDeathIndicators.Inactivity_OneYear &&
 				(
 					(
-						BillDeathIndicators.Inactivity_OneYear &
-						BillDeathIndicators.Sponsors_Majority
-					) | BillDeathIndicators.Sponsors_All
+					    (indicators & BillDeathIndicators.Inactivity_SixMonths) == BillDeathIndicators.Inactivity_SixMonths &&
+					    (indicators & BillDeathIndicators.Sponsors_Majority) == BillDeathIndicators.Sponsors_Majority
+					) || 
+				    (indicators & BillDeathIndicators.Sponsors_All) == BillDeathIndicators.Sponsors_All
 				)
-			))
+			)
 				return BillDeathLevel.SixFeetUnder;
 
 			//If a pocket veto or veto with subsequent inactivity occurred, it meets the third level of bill death.
-			if (indicators == (
-				BillDeathIndicators.Vetoed_Pocket |
+			if (
+				(indicators & BillDeathIndicators.Vetoed_Pocket) == BillDeathIndicators.Vetoed_Pocket ||
 				(
-					BillDeathIndicators.Inactivity_OneYear &
-					BillDeathIndicators.Vetoed
+					(indicators & BillDeathIndicators.Inactivity_OneYear) == BillDeathIndicators.Inactivity_OneYear &&
+					(indicators & BillDeathIndicators.Vetoed) == BillDeathIndicators.Vetoed
 				)
-			))
+			)
 				return BillDeathLevel.Clinical;
 
 			//If last referred to a committee and inactive for a year, it's the second death level.
-			if (indicators == (
-				BillDeathIndicators.Referred_Committee & 
-				BillDeathIndicators.Inactivity_OneYear
-			))
+			if (
+				(indicators & BillDeathIndicators.Referred_Committee) == BillDeathIndicators.Referred_Committee && 
+				(indicators & BillDeathIndicators.Inactivity_OneYear) == BillDeathIndicators.Inactivity_OneYear
+			)
 				return BillDeathLevel.Flatlining;
 
 			//If last approved by a chamber/committee and inactive for a year, it's the first death level.
-			if (indicators == (
+			if (
 				(
-					BillDeathIndicators.Approval_Chamber | 
-					BillDeathIndicators.Approval_Committee
-				) & BillDeathIndicators.Inactivity_OneYear
-			))
+					(indicators & BillDeathIndicators.Approval_Chamber) == BillDeathIndicators.Approval_Chamber || 
+					(indicators & BillDeathIndicators.Approval_Committee) == BillDeathIndicators.Approval_Committee
+				) &&
+				(indicators & BillDeathIndicators.Inactivity_OneYear) == BillDeathIndicators.Inactivity_OneYear
+			)
 				return BillDeathLevel.MostlyDead;
 
 			//Otherwise, the bill isn't dead

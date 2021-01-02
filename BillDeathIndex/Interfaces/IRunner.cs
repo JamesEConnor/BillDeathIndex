@@ -18,6 +18,7 @@ namespace BillDeathIndex
 		/// Handles bills that are downloaded.
 		/// </summary>
 		/// <param name="bills">The downloaded bills.</param>
+		/// <param name="finalBatch">Whether or not the batch is the final set of bills, to ensure commas are added properly.</param>
 		void HandleDownloadedBills(Bill[] bills);
 
 		/// <summary>

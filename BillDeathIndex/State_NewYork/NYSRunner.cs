@@ -6,6 +6,7 @@ using System.Linq;
 
 using BillDeathIndex.Utils;
 using Newtonsoft.Json;
+using System.Collections.Generic;
 
 namespace BillDeathIndex.States.NY
 {
@@ -18,7 +19,7 @@ namespace BillDeathIndex.States.NY
 		{
 			get
 			{
-				return Path.GetFullPath("files/states/ny.json");
+				return Path.GetFullPath("files/states/ny-expanded.json");
 			}
 		}
 
@@ -29,14 +30,19 @@ namespace BillDeathIndex.States.NY
 		public bool EndConditionMet { get; private set; }
 
 		/// <summary>
-		/// Tracks the number of bills processed, to support meeting the end condition.
-		/// </summary>
-		private int billsProcessed = 0;
-
-		/// <summary>
 		/// The NYS API object for this runner.
 		/// </summary>
 		private NYSAPI api;
+
+		/// <summary>
+		/// A StreamWriter that can handle JSON being written from multiple threads.
+		/// </summary>
+		private JSONThreadWriter writer;
+
+		/// <summary>
+		/// The FileStream for the JSONThreadWriter.
+		/// </summary>
+		private FileStream fs;
 
 		public NYSRunner()
 		{
@@ -48,11 +54,20 @@ namespace BillDeathIndex.States.NY
 		/// </summary>
 		public void Run()
 		{
+			int menuSelect = Logger.GetMenuSelection(new string[]{
+				"Download for all years",
+				"Download for a specific year/years"
+			});
+
 			//Makes sure the results CSV file exists.
 			IOUtils.EnsureFileExists(RESULTS_PATH);
 
 			//Empties any results from before.
-			IOUtils.OverwriteFile(RESULTS_PATH, "[");
+			IOUtils.OverwriteFile(RESULTS_PATH, "{");
+
+			//Open the file stream writer
+			fs = IOUtils.WaitForFile(RESULTS_PATH, FileMode.Append, FileAccess.Write, FileShare.Write);
+			writer = new JSONThreadWriter(fs);
 
 			//Creates the API object.
 			api = new NYSAPI(
@@ -60,7 +75,7 @@ namespace BillDeathIndex.States.NY
 			);
 
 			//Creates the downloading task
-			Task.Run(() => api.DownloadBills(new NYSAPISettings(true), HandleDownloadedBills, HandleDownloadsFinished));
+			Task.Run(() => api.DownloadBills(new NYSAPISettings(menuSelect == 0), HandleDownloadedBills, HandleDownloadsFinished));
 		}
 
 		/// <summary>
@@ -71,8 +86,8 @@ namespace BillDeathIndex.States.NY
 		{
 			try
 			{
-				FileStream fs = IOUtils.WaitForFile(RESULTS_PATH, FileMode.Append, FileAccess.Write, FileShare.Write);
-				StreamWriter writer = new StreamWriter(fs);
+				//The dictionary to serialize and add to the file.
+				Dictionary<string, SavableBill> newBills = new Dictionary<string, SavableBill>();
 
 				foreach (NYSBill bill in (NYSBill[])bills)
 				{
@@ -86,31 +101,31 @@ namespace BillDeathIndex.States.NY
 					//Create a small amount of information to save about a bill.
 					SavableBill savableBill = new SavableBill(
 						bill.printNo,
+						bill.session,
 						bill.title,
 						bill.summary,
+						bill.amendments.items[""].fullText,
+						bill.signed,
+						bill.adopted,
+						bill.vetoed,
 						bill.deathLevel
 					);
 
-					//Generate the CSV lines.
-					string JSONlines = JsonConvert.SerializeObject(savableBill);
+					//Add the new bill.
+					newBills.Add(bill.printNo, savableBill);
+				}
 
+				string JSONlines = JsonConvert.SerializeObject(newBills);
+				JSONlines = JSONlines.Substring(1, JSONlines.Length - 2);
+
+				if (JSONlines.Length > 0)
+				{
 					//Write the info
 					writer.WriteLine(JSONlines);
 				}
 
 				//Track the end condition.
-				billsProcessed += bills.Length;
-				if (billsProcessed == api.totalBillsToDownload)
-				{
-					writer.WriteLine("]");
-					EndConditionMet = true;
-				}
-
-				//Cleanup
-				writer.Close();
-				writer.Dispose();
-				fs.Close();
-				fs.Dispose();
+				api.billsProcessed += bills.Length;
 			}
 			catch (Exception e)
 			{
@@ -123,15 +138,17 @@ namespace BillDeathIndex.States.NY
 		/// </summary>
 		public void HandleDownloadsFinished()
 		{
-			using (var fs = IOUtils.WaitForFile(RESULTS_PATH, FileMode.Append, FileAccess.Write, FileShare.Write))
-			{
-				using (var writer = new StreamWriter(fs))
-				{
-					//Write the last character and end the loop.
-					writer.WriteLine("]");
-					EndConditionMet = true;
-				}
-			}
+			//Write the final content.
+			writer.WriteLine("}", includeComma: false);
+
+			//Cleanup
+			writer.Close();
+			writer.Dispose();
+			fs.Close();
+			fs.Dispose();
+
+			//Set the end condition.
+			EndConditionMet = true;
 		}
 
 		/// <summary>
@@ -151,22 +168,22 @@ namespace BillDeathIndex.States.NY
 			NYSBill.NYSBillActions.NYSBillAction secondLatestAction = nysBill.actions.items.FirstOrDefault(arg => arg.sequenceNo == latestAction.sequenceNo - 1);
 
 			//Inactive for four months.
-			if (latestAction.date.AddMonths(4) < DateTime.Now)
-				indicators &= DeathEvaluator.BillDeathIndicators.Inactivity_FourMonths;
+			if (latestAction.date.AddMonths(6) < DateTime.Now)
+				indicators |= DeathEvaluator.BillDeathIndicators.Inactivity_SixMonths;
 
 
 			//Inactive for four months.
 			if (latestAction.date.AddYears(1) < DateTime.Now)
-				indicators &= DeathEvaluator.BillDeathIndicators.Inactivity_OneYear;
+				indicators |= DeathEvaluator.BillDeathIndicators.Inactivity_OneYear;
 			
 			//If the most action was it being referred, say so.
 			if (latestAction.text.StartsWith("referred", StringComparison.CurrentCultureIgnoreCase))
-				indicators &= DeathEvaluator.BillDeathIndicators.Referred_Committee;
+				indicators |= DeathEvaluator.BillDeathIndicators.Referred_Committee;
 
 			//If the action before the latest was referral to a committee, than this action must be occurring after committee approval.
 			if (secondLatestAction.sequenceNo != 0 && //Ensures the action actually occurred
 				secondLatestAction.text.StartsWith("referred", StringComparison.CurrentCultureIgnoreCase))
-				indicators &= DeathEvaluator.BillDeathIndicators.Approval_Committee;
+				indicators |= DeathEvaluator.BillDeathIndicators.Approval_Committee;
 
 			//If the latest action was it being passed, or if the second most recent action had it either passed or delivered after a passing, then it was recently approved by a chamber.
 			if (latestAction.text.StartsWith("passed", StringComparison.CurrentCultureIgnoreCase) ||
@@ -175,15 +192,15 @@ namespace BillDeathIndex.States.NY
 				    (secondLatestAction.text.StartsWith("passed", StringComparison.CurrentCultureIgnoreCase) ||
 				     secondLatestAction.text.StartsWith("delivered", StringComparison.CurrentCultureIgnoreCase))
 			   ))
-				indicators &= DeathEvaluator.BillDeathIndicators.Approval_Chamber;
+				indicators |= DeathEvaluator.BillDeathIndicators.Approval_Chamber;
 
 			//If the latest action was the bill being delivered to the governor and it happened more than 30 days prior, it's considered pocket vetoed.
 			if (latestAction.text.Equals("delivered to governor", StringComparison.CurrentCultureIgnoreCase) && latestAction.date.AddDays(30) < DateTime.Now)
-				indicators &= DeathEvaluator.BillDeathIndicators.Vetoed_Pocket;
+				indicators |= DeathEvaluator.BillDeathIndicators.Vetoed_Pocket;
 
 			//If the bill was vetoed
 			if (nysBill.vetoed)
-				indicators &= DeathEvaluator.BillDeathIndicators.Vetoed;
+				indicators |= DeathEvaluator.BillDeathIndicators.Vetoed;
 
 			//Get the number of non-incumbent (co)sponsors.
 			NYSRepresentative[] cosponsors = nysBill.amendments.items.First().Value.coSponsors.items;
@@ -192,11 +209,11 @@ namespace BillDeathIndex.States.NY
 
 			//If half or more of the (co)sponsors are no longer in office, the majority flag is set.
 			if (nonIncumbentCosponsors >= (cosponsors.Length + 1) / 2)
-				indicators &= DeathEvaluator.BillDeathIndicators.Sponsors_Majority;
+				indicators |= DeathEvaluator.BillDeathIndicators.Sponsors_Majority;
 
 			//If all (co)sponsors are no longer in office, the all flag is set.
 			if (nonIncumbentCosponsors == cosponsors.Length + 1)
-				indicators &= DeathEvaluator.BillDeathIndicators.Sponsors_All;
+				indicators |= DeathEvaluator.BillDeathIndicators.Sponsors_All;
 
 			//Returns the result.
 			return indicators;

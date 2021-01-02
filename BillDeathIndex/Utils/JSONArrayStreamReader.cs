@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using Newtonsoft.Json;
 
 namespace BillDeathIndex
 {
@@ -114,4 +115,63 @@ namespace BillDeathIndex
 			reader.Dispose();
 		}
 	}
+
+	/*
+	public class SavableBillConverter : JsonConverter<SavableBill>
+	{
+		/// <summary>
+		/// Gets a value indicating whether this <see cref="T:BillDeathIndex.SavableBillConverter"/> can read.
+		/// </summary>
+		/// <value>Always <c>false</c>.</value>
+		public override bool CanRead
+		{
+			get
+			{
+				return false;
+			}
+		}
+
+		/// <summary>
+		/// Gets a value indicating whether this <see cref="T:BillDeathIndex.SavableBillConverter"/> can write.
+		/// </summary>
+		/// <value>Always <c>true</c>.</value>
+		public override bool CanWrite
+		{
+			get
+			{
+				return true;
+			}
+		}
+
+		public override SavableBill ReadJson(JsonReader reader, Type objectType, SavableBill existingValue, bool hasExistingValue, JsonSerializer serializer)
+		{
+			throw new NotImplementedException();
+		}
+
+		/*
+		/// <summary>
+		/// Writes a SavableBill object to a JSON string.
+		/// </summary>
+		/// <param name="writer">The JSON writer to send the string to.</param>
+		/// <param name="value">The bill to convert.</param>
+		/// <param name="serializer">Serializer.</param>
+		public override void WriteJson(JsonWriter writer, SavableBill value, JsonSerializer serializer)
+		{
+			string JSON = string.Format(
+				"\"{0}\":{" +
+				"\"printNo\":\"{0}\"," +
+				"\"year\":\"{1}\"," +
+				"\"title\":\"{2}\"," +
+				"\"summary\":\"{3}\"," +
+				"\"fullText\":\"{4}\"," +
+				"\"signed\":\"{5}\"," +
+				"\"adopted\":\"{6}\"," +
+				"\"vetoed\":\"{7}\"," +
+				"\"deathLevel\":\"{8}\"" +
+				"}",
+				value.printNo, value.year, value.title, value.summary, value.fullText, value.signed, value.adopted, value.vetoed, value.deathLevel);
+
+			writer.WriteValue(JSON);
+		}
+	}*/
 }

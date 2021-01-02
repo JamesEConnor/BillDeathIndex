@@ -27,9 +27,15 @@ namespace BillDeathIndex.States.NY
 		/// </summary>
 		public const int MAX_THREAD_COUNT = 5;
 
+		/// <summary>
+		/// Tracks the number of bills that have been processed.
+		/// </summary>
+		public int billsProcessed = 0;
 
-		//The total number of bills that are to be downloaded across all years.
-		public int totalBillsToDownload = 0;
+		/// <summary>
+		/// The total number of bills that are to be downloaded across all years.
+		/// </summary>
+		public int totalBillsToDownload { get; private set; }
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="T:BillDeathIndex.States.NY.NYSAPI"/> class.
@@ -67,26 +73,22 @@ namespace BillDeathIndex.States.NY
 					//Callback for the single downloaded bill.
 					OnBillsDownloaded(initResponse.result.items);
 
-					//Download the remaining bills asynchronously
-					for (int a = 1; a < initResponse.total; a += 1000)
+					//Download the remaining bills asynchronously (offset indexing starts at 1)
+					for (int a = 2; a < initResponse.total; a += 1000)
 					{
 						Logger.Log(string.Format("Downloading bills {0}-{1} of {2} for session years {3} through {4}.", a, a + 1000, initResponse.total, years[y], years[y] + 1));
 
 						//Ensure the maximum thread count is never surpassed.
 						while (threadCount >= MAX_THREAD_COUNT)
 							await Task.Delay(1000);
-
-						if (a + 1000 > initResponse.total && y == years.Length - 1)
-						{
-							//Make the last request synchronously to ensure it finishes before ending the process
-							NYSBillResponse finalResponse = (NYSBillResponse)RequestBills(baseURL + "&limit=1000&offset=" + a, years[y]);
-							OnBillsDownloaded(finalResponse.result.items);
-						}
-						else
-							RequestBillsAsync(baseURL + "&limit=1000&offset=" + a, OnBillsDownloaded);
+						
+						RequestBillsAsync(baseURL + "&limit=1000&offset=" + a, OnBillsDownloaded);
 					}
 				}
 
+				//Ensure all threads are finished before finishing the program
+				while (threadCount > 0 || billsProcessed < totalBillsToDownload) { }
+					
 				//Callback for when the downloads are finished.
 				OnBillDownloadFinished();
 			}
@@ -198,21 +200,21 @@ namespace BillDeathIndex.States.NY
 			//Either download bills from every year, or just from the current year.
 			if (downloadAllYears)
 			{
-				//The number of years between the lowest available year and this year, inclusive.
-				int numberOfYears = DateTime.Now.Year - MIN_YEAR + 1;
-
-				//Accounts for situations where bills may have been added for the following year.
-				if (DateTime.Now.Year % 2 == 1)
-					numberOfYears++;
+				//The number of years between the lowest available year and the year after this one, inclusive.
+				int numberOfYears = DateTime.Now.Year - MIN_YEAR + 2;
 
 				//Set the year array
-				years = new int[numberOfYears/2];
+				years = new int[(int)Math.Ceiling(numberOfYears/2.0)];
 				for (int a = 0; a < years.Length; a++)
 					years[a] = MIN_YEAR + (a * 2);
 			}
 			else
 			{
-				years = new int[] { DateTime.Now.Year };
+				string[] split = Logger.GetInput().Split(',');
+				years = new int[split.Length];
+
+				for (int a = 0; a < split.Length; a++)
+					years[a] = int.Parse(split[a]);
 			}
 		}
 	}

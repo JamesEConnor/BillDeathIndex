@@ -58,6 +58,7 @@
     <Compile Include="State_NewYork\NYSConverter.cs" />
     <Compile Include="Interfaces\ICSVConverter.cs" />
     <Compile Include="Utils\JSONArrayStreamReader.cs" />
+    <Compile Include="Utils\JSONThreadWriter.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="State_NewYork\" />
