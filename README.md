@@ -15,4 +15,4 @@ Bills are classified to have four different levels of death. Each level requires
 
 ## Viewing the Results
 
-The results can be viewed on a Github pages website that allows for searching, sorting and filtering the various bills considered to be dead. [Coming Soon]()
+The results can be viewed on a Github pages website that allows for searching, sorting and filtering the various bills considered to be dead. [https://jameseconnor.github.io/BillDeathIndex-Website/](https://jameseconnor.github.io/BillDeathIndex-Website/)
